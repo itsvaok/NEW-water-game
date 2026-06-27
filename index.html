@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charity:Water Drop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+ 
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <h1 class="game-title">Charity:Water Drop</h1>
+        <p class="game-tagline">Catch the good drops, avoid the bad ones!</p>
+        <div class="score-panel">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="timer">Time: <span id="time">30</span>s</div>
+            <button id="start-btn">Start Game</button>
+        </div>
+        
+        <!-- How to Play Screen -->
+        <div id="how-to-play-screen" class="overlay-screen">
+            <div class="overlay-content">
+                <img src="img/water-can-transparent.png" alt="Water Can" class="overlay-image">
+                <h2>How to Play</h2>
+                <p>Move your cursor left and right to control the Jerry Bucket.</p>
+                <p>Blue drops add 1 point. Red dirty drops take away 1 point!</p>
+                <p>You have 30 seconds to catch as many drops as you can.</p>
+                <p>Try to score 20 points or more to win!</p>
+                <button id="begin-btn" class="begin-button">Begin!</button>
+            </div>
+        </div>
+        
+        <div id="game-container">
+            <button id="restart-btn" class="restart-button">Restart</button>
+            <div id="bucket" class="bucket">
+                <img src="img/water-can-transparent.png" alt="Water Bucket">
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
