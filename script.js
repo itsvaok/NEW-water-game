@@ -14,8 +14,38 @@ let bucketX = 0;
 
 // --- New variables needed for score + timer ---
 let score = 0;            // current score, starts at 0
-let timeLeft = 30;        // countdown starts at 30 seconds
+let timeLeft = 30;        // countdown starts at 30 seconds (overwritten by difficulty)
 let timerInterval = null; // will hold setInterval so we can stop it later
+
+// --- Difficulty settings ---
+// Each difficulty sets its own time, win score, drop speed, dirty drop
+// chance, and how often new drops spawn. Default is "easy" until the
+// player picks something on the how-to-play screen.
+let selectedDifficulty = "easy";
+
+const difficultySettings = {
+  easy: {
+    timeLimit: 60,       // how many seconds the player has to win
+    winScore: 30,        // how many points needed to win
+    dropDuration: 4,     // how many seconds a drop takes to fall (higher = slower)
+    dirtyChance: 0.30,   // chance a drop is dirty, 0.10 = 10%
+    spawnRate: 800,      // milliseconds between each new drop (lower = more drops)
+  },
+  normal: {
+    timeLimit: 45,       // less time than easy
+    winScore: 25,        // more points needed than easy
+    dropDuration: 3.5,   // drops fall faster than easy
+    dirtyChance: 0.25,   // 25% of drops are dirty
+    spawnRate: 900,      // slightly fewer drops than easy
+  },
+  hard: {
+    timeLimit: 30,       // least amount of time
+    winScore: 25,        // most points needed to win
+    dropDuration: 1,     // drops fall the fastest
+    dirtyChance: 0.19,   // nearly half the drops are dirty
+    spawnRate: 800,     // fewest drops spawning, so catching clean ones is harder
+  },
+};
 
 // --- Grab the score/timer display elements ---
 const scoreDisplay = document.getElementById("score"); // shows the score number
@@ -23,7 +53,7 @@ const timeDisplay = document.getElementById("time");   // shows seconds left
 const bucket = document.getElementById("bucket");      // grab the bucket element
 
 // --- Messages shown when the game ends ---
-// One array for winning, one for losing, as requested.
+// One array for winning, one for losing.
 // We'll pick a random message from whichever array applies.
 const winningMessages = [
   "Great job! You're a water-catching champ!",
@@ -36,7 +66,7 @@ const losingMessages = [
   "So close! Give it another shot.",
   "Not bad, but you can do better. Try again!",
   "The drops got away this time. One more round?",
-  "Almost there! Try again to beat your score."
+  "Almost there! Try again to reach the score goal."
 ];
 
 // --- Helper: pick a random item from an array ---
@@ -44,6 +74,20 @@ function getRandomMessage(messageArray) {
   const randomIndex = Math.floor(Math.random() * messageArray.length);
   return messageArray[randomIndex];
 }
+
+// --- Difficulty button selection ---
+// When a difficulty button is clicked, mark it active and save the choice.
+// The actual settings don't apply until Begin is clicked.
+document.querySelectorAll(".difficulty-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    // remove "active" from whichever button currently has it
+    document.querySelectorAll(".difficulty-btn").forEach((b) => b.classList.remove("active"));
+    // mark this button as the chosen one
+    btn.classList.add("active");
+    // save the difficulty name from the button's data attribute
+    selectedDifficulty = btn.getAttribute("data-difficulty");
+  });
+});
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
@@ -61,35 +105,48 @@ function startGame() {
   // Show the restart button
   document.getElementById("restart-btn").classList.remove("hidden");
 
+  // Look up the settings for whichever difficulty was selected
+  const settings = difficultySettings[selectedDifficulty];
+
+  // Show the difficulty badge inside the game container during play
+  const badge = document.getElementById("difficulty-badge");
+  badge.textContent = selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1);
+  badge.className = `difficulty-badge ${selectedDifficulty}`; // applies color via CSS
+
   gameRunning = true;
 
-  // reset score and timer each time a new game starts
+  // Reset score and apply this difficulty's time limit
   score = 0;
-  timeLeft = 30;
+  timeLeft = settings.timeLimit;   // use difficulty's time, not a hardcoded 30
   scoreDisplay.textContent = score;
   timeDisplay.textContent = timeLeft;
+  document.getElementById("win-score-display").textContent = settings.winScore; // updates goal based on difficulty
 
   // Reset bucket position to center
   bucketX = 0;
   bucket.style.left = "50%";
   bucket.style.transform = "translateX(-50%)";
 
-  // clear out any leftover drops or end-message from a previous round
+  // Clear out any leftover drops or end-message from a previous round
   const gameContainer = document.getElementById("game-container");
   gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
   gameContainer.querySelectorAll(".confetti").forEach((c) => c.remove());
   gameContainer.querySelectorAll(".end-message").forEach((msg) => msg.remove());
+  gameContainer.querySelectorAll(".end-message").forEach((msg) => msg.remove());
+  shownMilestones.clear(); 
+// reset milestones so they show again on a new round
+
 
   // Set up bucket dragging
   setupBucketDragging();
 
-  // Create new drops every second (1000 milliseconds)
-  dropMaker = setInterval(createDrop, 1000);
+  // Spawn drops using this difficulty's spawn rate
+  dropMaker = setInterval(createDrop, settings.spawnRate);
 
   // Check for collisions between drops and bucket every 50ms
   collisionChecker = setInterval(checkCollisions, 50);
 
-  // start the 30-second countdown
+  // Start the countdown
   timerInterval = setInterval(updateTimer, 1000);
 }
 
@@ -97,7 +154,7 @@ function startGame() {
 function restartGame() {
   gameRunning = false;
 
-  // stop spawning new drops and stop the countdown
+  // Stop spawning new drops and stop the countdown
   clearInterval(dropMaker);
   clearInterval(timerInterval);
   clearInterval(collisionChecker);
@@ -105,13 +162,13 @@ function restartGame() {
   // Hide restart button
   document.getElementById("restart-btn").classList.add("hidden");
 
-  // clear out any leftover drops or end-message
+  // Clear out any leftover drops or end-message
   const gameContainer = document.getElementById("game-container");
   gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
   gameContainer.querySelectorAll(".confetti").forEach((c) => c.remove());
   gameContainer.querySelectorAll(".end-message").forEach((msg) => msg.remove());
 
-  // Show how-to-play screen again
+  // Show how-to-play screen again so player can re-pick difficulty
   const howToPlayScreen = document.getElementById("how-to-play-screen");
   howToPlayScreen.classList.remove("hidden");
 
@@ -128,10 +185,51 @@ function updateTimer() {
   }
 }
 
-// --- Adds points to the score and updates the display ---
+// --- Adds or subtracts points from the score and updates the display ---
 function updateScore(points) {
   score += points;
   scoreDisplay.textContent = score;
+  checkMilestones(); // check if player just hit a milestone score
+}
+
+// --- Milestone messages shown during gameplay as player hits certain scores ---
+// Each milestone is a fraction of the win score so they scale across difficulties.
+// e.g. 0.25 of winScore 20 = triggers at 5 pts; 0.25 of winScore 30 = triggers at 7 pts
+const milestones = [
+  { fraction: 0.25, message: "Great start! Keep catching! 💧" },  // 25% of win score
+  { fraction: 0.50, message: "Halfway there! 🙌" },               // 50% of win score
+  { fraction: 0.75, message: "So close! Just a few more! ⚡" },   // 75% of win score
+  { fraction: 0.90, message: "Almost there! One last push! 🔥" }, // 90% of win score
+];
+
+// Tracks which milestones have already been shown so they don't repeat
+const shownMilestones = new Set();
+
+function checkMilestones() {
+  const settings = difficultySettings[selectedDifficulty];
+
+  milestones.forEach((milestone) => {
+    // Calculate the score this milestone triggers at for the current difficulty
+    const triggerScore = Math.floor(milestone.fraction * settings.winScore);
+
+    // Show the message if player just reached or passed this score and hasn't seen it yet
+    if (score >= triggerScore && !shownMilestones.has(milestone.fraction)) {
+      shownMilestones.add(milestone.fraction); // mark as shown so it doesn't repeat
+      showMilestoneMessage(milestone.message);
+    }
+  });
+}
+
+function showMilestoneMessage(message) {
+  const gameContainer = document.getElementById("game-container");
+
+  const el = document.createElement("div");
+  el.className = "milestone-message";
+  el.textContent = message;
+  gameContainer.appendChild(el);
+
+  // Remove the message after the CSS animation finishes (2 seconds)
+  setTimeout(() => el.remove(), 2000);
 }
 
 // --- Stops the game and shows a win/lose message ---
@@ -141,26 +239,29 @@ function endGame() {
   // Hide restart button
   document.getElementById("restart-btn").classList.add("hidden");
 
-  // stop spawning new drops and stop the countdown
+  // Stop spawning new drops and stop the countdown
   clearInterval(dropMaker);
   clearInterval(timerInterval);
   clearInterval(collisionChecker);
 
-  // remove any drops still falling on screen
+  // Remove any drops still falling on screen
   const gameContainer = document.getElementById("game-container");
   gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
 
-  // decide win or lose based on final score, then pick a random message
+  // Look up the win score for the difficulty that was played
+  const settings = difficultySettings[selectedDifficulty];
+
+  // Decide win or lose based on whether score meets this difficulty's goal
   let resultMessage;
   let isWin = false;
-  if (score >= 20) {
-    resultMessage = getRandomMessage(winningMessages); // 20+ points = win
+  if (score >= settings.winScore) {         // use difficulty's win score, not hardcoded 20
+    resultMessage = getRandomMessage(winningMessages);
     isWin = true;
   } else {
-    resultMessage = getRandomMessage(losingMessages); // under 20 points = lose
+    resultMessage = getRandomMessage(losingMessages);
   }
 
-  // display the message inside the game container
+  // Display the message inside the game container
   const messageEl = document.createElement("div");
   messageEl.className = "end-message";
   messageEl.textContent = `${resultMessage} Final score: ${score}`;
@@ -178,28 +279,34 @@ function createDrop() {
   // Create a new div element that will be our water drop
   const drop = document.createElement("div");
   drop.className = "water-drop";
+  drop.innerHTML = `<img src="img/water.png" alt="water drop" style="width:100%;height:100%;object-fit:contain;">`;
+
+  // Look up dirty chance and fall speed for the current difficulty
+  const settings = difficultySettings[selectedDifficulty];
 
   // Make drops different sizes for visual variety
-  const initialSize = 60;
-  const sizeMultiplier = Math.random() * 0.8 + 0.5;
-  const size = initialSize * sizeMultiplier;
-  drop.style.width = drop.style.height = `${size}px`;
+ const minSize = 70;   // smallest a drop can be
+ const maxSize = 110;  // biggest a drop can be
+ const size = Math.random() * (maxSize - minSize) + minSize;
+ drop.style.width = drop.style.height = `${size}px`;
 
-  // 30% chance to be a dirty drop (red)
-  const isDirty = Math.random() < 0.3;
-  if (isDirty) {
+  // Use this difficulty's dirty drop chance (e.g. 0.50 on Hard = 50%)
+  const isDirty = Math.random() < settings.dirtyChance;
+if (isDirty) {
     drop.classList.add("bad-drop");
     drop.setAttribute("data-dirty", "true");
-  }
+    drop.innerHTML = `<img src="img/dirtywater.png" alt="dirty water drop" style="width:100%;height:100%;object-fit:contain;">`;
+} else {
+    drop.innerHTML = `<img src="img/water.png" alt="water drop" style="width:100%;height:100%;object-fit:contain;">`;
+}
 
   // Position the drop randomly across the game width
-  // Subtract 60 pixels to keep drops fully inside the container
   const gameWidth = document.getElementById("game-container").offsetWidth;
   const xPosition = Math.random() * (gameWidth - 60);
   drop.style.left = xPosition + "px";
 
-  // Make drops fall for 4 seconds
-  drop.style.animationDuration = "4s";
+  // Use this difficulty's fall duration (shorter = faster drops)
+  drop.style.animationDuration = settings.dropDuration + "s";
 
   // Add the new drop to the game screen
   document.getElementById("game-container").appendChild(drop);
@@ -231,15 +338,12 @@ function handleCursorMove(e) {
   // Calculate position relative to game container
   const relativeX = cursorX - containerRect.left;
 
-  // Get bucket dimensions
-  const bucketRect = bucket.getBoundingClientRect();
-  const bucketWidth = bucketRect.width;
-
   // Calculate how far from container center the cursor is
   const containerCenter = containerRect.width / 2;
   const offset = relativeX - containerCenter;
 
   // Keep bucket within container bounds
+  const bucketWidth = bucket.getBoundingClientRect().width;
   const maxOffset = (containerRect.width - bucketWidth) / 2;
   const constrainedOffset = Math.max(-maxOffset, Math.min(maxOffset, offset));
 
@@ -248,13 +352,23 @@ function handleCursorMove(e) {
   bucket.style.transform = "translateX(-50%)";
 }
 
+
 // --- Check for collisions between drops and bucket ---
 function checkCollisions() {
   if (!gameRunning) return;
 
   const gameContainer = document.getElementById("game-container");
   const drops = gameContainer.querySelectorAll(".water-drop");
-  const bucketRect = bucket.getBoundingClientRect();
+
+  // Shrink the hitbox by 20px on each side so it's smaller than the visible image
+  const fullRect = bucket.getBoundingClientRect();
+  const bucketRect = {
+    left:   fullRect.left   + 40,  // shrink from the left
+    right:  fullRect.right  - 40,  // shrink from the right
+    top:    fullRect.top    + 30,  // shrink from the top
+    bottom: fullRect.bottom - 20,  // shrink from the bottom
+    //Higher number = smaller hitbox (harder to catch drops)
+  };
 
   drops.forEach((drop) => {
     const dropRect = drop.getBoundingClientRect();
@@ -265,7 +379,7 @@ function checkCollisions() {
       if (drop.getAttribute("data-dirty") === "true") {
         updateScore(-1); // Subtract 1 point for dirty drop
       } else {
-        updateScore(1); // Add 1 point for clean drop
+        updateScore(1);  // Add 1 point for clean drop
       }
       drop.remove(); // Remove the caught drop
     }

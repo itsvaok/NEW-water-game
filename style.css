@@ -26,11 +26,13 @@ Fonts:
 
 body {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     min-height: 100vh;
     background-color: #fff7e1;
     font-family: Arial, sans-serif;
+    padding: 20px 0;
 }
 
 .game-wrapper {
@@ -88,18 +90,25 @@ body {
     font-weight: bold;
 }
 
+.win-score {
+    flex: 0 1 auto;
+    font-size: 24px;
+    font-weight: bold;
+    color: #2E9DF7;   /* blue so it stands out from the score */
+}
+
 .water-drop {
     position: absolute;
-    width: 60px;  /* increased from 40px */
-    height: 60px; /* increased from 40px */
-    background-color: #0099ff;
-    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    background-color: transparent;  /* remove the blue circle */
+    border-radius: 0;               /* remove the circle shape */
     animation: dropFall linear forwards;
     transform-origin: center;
     cursor: pointer;
-    padding: 15px;  /* Add padding for larger click area */
-    margin: -15px;  /* Offset padding to maintain visual size */
-    transition: transform 0.1s ease;  /* Smooth hover effect */
+    padding: 15px;
+    margin: -15px;
+    transition: transform 0.1s ease;
 }
 
 .water-drop:hover {
@@ -107,7 +116,7 @@ body {
 }
 
 .bad-drop {
-    background-color: #6b3a02;
+    background-color: transparent; /* remove the brown box */
 }
 
 .game-title {
@@ -116,9 +125,17 @@ body {
     margin-top: 0;
     margin-bottom: 5px;  /* reduced from 20px */
     text-align: center;
+
+    /* charity: water's logo wordmark uses Baskerville Regular
+       at 140 tracking. Tracking values (used in design tools like
+       Illustrator) are in thousandths of an em, so 140 tracking
+       converts to 0.14em letter-spacing in CSS.
+       Libre Baskerville (loaded via Google Fonts in index.html) is
+       listed first so the look is consistent for every visitor,
+       regardless of whether their device has Baskerville installed. */
     font-family: "Libre Baskerville", Baskerville, Georgia, serif;
-    font-weight: normal;
-    letter-spacing: 0.14em;
+    font-weight: normal;       /* "Regular" weight, not bold */
+    letter-spacing: 0.14em;    /* 140 tracking */
 }
 
 .game-tagline {
@@ -126,6 +143,7 @@ body {
     font-size: 18px;
     margin-bottom: 20px;
     text-align: center;
+    font-family: "Libre Baskerville", Baskerville, Georgia, serif;
 }
 
 @keyframes dropFall {
@@ -209,6 +227,7 @@ body {
     color: #131313;
     font-size: 32px;
     margin-bottom: 20px;
+    font-family: "Libre Baskerville", Baskerville, Georgia, serif;
 }
 
 .overlay-content p {
@@ -216,6 +235,7 @@ body {
     font-size: 18px;
     margin-bottom: 15px;
     line-height: 1.5;
+    font-family: "Libre Baskerville", Baskerville, Georgia, serif;
 }
 
 .begin-button {
@@ -310,4 +330,206 @@ body {
 
 #restart-btn.hidden {
     display: none;
+}
+
+/* ---- Difficulty Selector (added for difficulty modes) ---- */
+
+.difficulty-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Row of three difficulty buttons inside the overlay */
+.difficulty-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.difficulty-btn {
+    display: flex;
+    flex-direction: column;       /* stack label and hint vertically */
+    align-items: center;
+    gap: 4px;
+    padding: 10px 18px;
+    border: 3px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    min-width: 90px;
+}
+
+/* Small text under each button label showing time + score goal */
+.difficulty-hint {
+    font-size: 11px;
+    font-weight: normal;
+    opacity: 0.75;
+}
+
+/* Easy = green when selected */
+.difficulty-btn[data-difficulty="easy"].active {
+    border-color: #4FCB53;
+    background-color: #eafbea;
+    color: #159A48;
+}
+
+/* Normal = blue when selected */
+.difficulty-btn[data-difficulty="normal"].active {
+    border-color: #2E9DF7;
+    background-color: #e6f4ff;
+    color: #1672c4;
+}
+
+/* Hard = red when selected */
+.difficulty-btn[data-difficulty="hard"].active {
+    border-color: #F5402C;
+    background-color: #fff0ee;
+    color: #d63018;
+}
+
+/* Hover state for unselected buttons */
+.difficulty-btn:not(.active):hover {
+    border-color: #aaa;
+    background-color: #f5f5f5;
+}
+
+/* ---- Difficulty badge shown inside the game container during play ---- */
+.difficulty-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 50;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Badge colors match the button colors */
+.difficulty-badge.easy   { background-color: #4FCB53; color: white; }
+.difficulty-badge.normal { background-color: #2E9DF7; color: white; }
+.difficulty-badge.hard   { background-color: #F5402C; color: white; }
+
+/* ---- charity: water Footer ---- */
+
+.charity-footer {
+    width: 800px;
+    text-align: center;
+    padding: 24px 20px;
+    background-color: #003366;
+    border-radius: 8px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-tagline {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.75;
+    margin: 0;
+}
+
+.footer-logo-link {
+    font-family: "Libre Baskerville", Baskerville, Georgia, serif;
+    font-size: 28px;
+    font-weight: normal;
+    letter-spacing: 0.14em;
+    color: #FFC907;
+    text-decoration: none;
+}
+
+.footer-logo-link:hover {
+    text-decoration: underline;
+}
+
+.footer-mission {
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 480px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.footer-links {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.footer-btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    background-color: #fff;
+    color: #003366;
+}
+
+.footer-btn:hover {
+    background-color: #e8f0ff;
+    transform: translateY(-2px);
+}
+
+.footer-btn-donate {
+    background-color: #FFC907;
+    color: #003366;
+}
+
+.footer-btn-donate:hover {
+    background-color: #e6b500;
+    transform: translateY(-2px);
+}
+
+.footer-fine {
+    font-size: 11px;
+    opacity: 0.5;
+    margin: 0;
+}
+
+@media (max-width: 850px) {
+    .charity-footer {
+        width: 95vw;
+    }
+}
+
+/* ---- Milestone Messages ---- */
+.milestone-message {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #FFC907;   /* charity: water yellow */
+    color: #003366;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: "Libre Baskerville", Baskerville, Georgia, serif;
+    padding: 12px 24px;
+    border-radius: 30px;
+    white-space: nowrap;
+    z-index: 200;
+    animation: milestone-fade 2s ease-in-out forwards; /* appears then fades out */
+    pointer-events: none; /* so it doesn't block clicks on drops */
+}
+
+@keyframes milestone-fade {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(0); }
+    20%  { opacity: 1; transform: translateX(-50%) translateY(-10px); } /* pops up */
+    80%  { opacity: 1; transform: translateX(-50%) translateY(-10px); } /* stays visible */
+    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } /* fades out */
 }

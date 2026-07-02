@@ -14,11 +14,12 @@
     <div class="game-wrapper">
         <h1 class="game-title">Charity:Water Drop</h1>
         <p class="game-tagline">Catch the good drops, avoid the bad ones!</p>
-        <div class="score-panel">
-            <div class="score">Score: <span id="score">0</span></div>
-            <div class="timer">Time: <span id="time">30</span>s</div>
-            <button id="start-btn">Start Game</button>
-        </div>
+       <div class="score-panel">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="win-score">Goal: <span id="win-score-display">10</span> pts</div>
+        <div class="timer">Time: <span id="time">30</span>s</div>
+        <button id="start-btn">Start Game</button>
+    </div>
         
         <!-- How to Play Screen -->
         <div id="how-to-play-screen" class="overlay-screen">
@@ -27,18 +28,64 @@
                 <h2>How to Play</h2>
                 <p>Move your cursor left and right to control the Jerry Bucket.</p>
                 <p>Blue drops add 1 point. Red dirty drops take away 1 point!</p>
-                <p>You have 30 seconds to catch as many drops as you can.</p>
-                <p>Try to score 20 points or more to win!</p>
+                <p>Try to score enough points before time runs out!</p>
+
+                <!-- Difficulty selector — added for difficulty modes -->
+                <div class="difficulty-selector">
+                    <p class="difficulty-label">Choose your difficulty:</p>
+                    <div class="difficulty-buttons">
+                        <!-- Each button sets the active difficulty when clicked -->
+                        <button class="difficulty-btn active" data-difficulty="easy">
+    Easy
+    <span class="difficulty-hint">60s • Score 30</span>
+</button>
+<button class="difficulty-btn" data-difficulty="normal">
+    Normal
+    <span class="difficulty-hint">45s • Score 25</span>
+</button>
+<button class="difficulty-btn" data-difficulty="hard">
+    Hard
+    <span class="difficulty-hint">30s • Score 20</span>
+</button>
+                    </div>
+                </div>
+
                 <button id="begin-btn" class="begin-button">Begin!</button>
             </div>
         </div>
         
         <div id="game-container">
             <button id="restart-btn" class="restart-button">Restart</button>
+            <!-- Difficulty badge shown during gameplay so player can see what mode they're in -->
+            <div id="difficulty-badge" class="difficulty-badge"></div>
             <div id="bucket" class="bucket">
                 <img src="img/water-can-transparent.png" alt="Water Bucket">
             </div>
         </div>
+    </div>
+
+   </div>
+
+        <!-- Footer with links to charity: water -->
+        <footer class="charity-footer">
+            <p class="footer-tagline">This game was made in support of</p>
+            <a href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer" class="footer-logo-link">
+                charity: water
+            </a>
+            <p class="footer-mission">
+                charity: water is a nonprofit bringing clean and safe drinking water to people in need around the world.
+            </p>
+            <div class="footer-links">
+                <a href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer" class="footer-btn">
+                    Visit Website
+                </a>
+                <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer" class="footer-btn footer-btn-donate">
+                    💧 Donate Now
+                </a>
+            </div>
+            <p class="footer-fine">Links open charitywater.org in a new tab.</p>
+        </footer>
+
     </div>
     
     <script src="script.js"></script>
